@@ -331,8 +331,18 @@ function botAction(s,pi){
   const cur=total(pl.gems);
   if(tgt){
     const cols=Object.entries(tgt.m).filter(([c])=>s.bank[c]>0).sort((a,b)=>b[1]-a[1]);
-    if(cols.length===1&&cols[0][1]>=2&&s.bank[cols[0][0]]>=4&&cur<=8) return {type:'take',gems:{[cols[0][0]]:2}};
-    if(cols.length){ const g={}; cols.slice(0,3).forEach(([c])=>g[c]=1); return withDiscard({type:'take',gems:g},pl,tgt.m); }
+    const maxTake=Math.min(3,Math.max(1,10-cur));
+    if(cols.length===1&&cols[0][1]>=2&&s.bank[cols[0][0]]>=4&&maxTake>=2) return {type:'take',gems:{[cols[0][0]]:2}};
+    const pick=cols.slice(0,maxTake).map(x=>x[0]);
+    if(pick.length<maxTake){
+      const dem={};
+      cands.forEach(c=>{const n=need(c);for(const k in n.m) dem[k]=(dem[k]||0)+n.m[k]/(1+n.t);});
+      COLS.filter(c=>s.bank[c]>0&&!pick.includes(c))
+        .sort((a,b)=>(dem[b]||0)-(dem[a]||0)||(s.bank[b]-s.bank[a]))
+        .forEach(c=>{if(pick.length<maxTake)pick.push(c);});
+    }
+    if(pick.length===1&&s.bank[pick[0]]>=4&&maxTake>=2) return {type:'take',gems:{[pick[0]]:2}};
+    if(pick.length){ const g={}; pick.forEach(c=>g[c]=1); return withDiscard({type:'take',gems:g},pl,tgt.m); }
     if(pl.reserved.length<3&&tgt.from==='mk'&&tgt.t>3) return withDiscard({type:'reserve',lv:tgt.lv,idx:tgt.idx},pl,tgt.m,true);
   }
   // 3. 아무 보석
