@@ -8,7 +8,9 @@
 <title>보석 길드</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:#1e1b4b;color:#f1f5f9;font-size:14px;user-select:none;-webkit-user-select:none}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#ede9fe;font-size:14px;user-select:none;-webkit-user-select:none}
+body{background:#14102e;background-image:radial-gradient(circle at 20% 0%,rgba(99,102,241,.28),transparent 55%),radial-gradient(circle at 90% 20%,rgba(217,70,239,.16),transparent 45%)}
+.num{font-family:Georgia,"Times New Roman",serif;font-weight:700}
 button{font-family:inherit;border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer;background:#6366f1;color:#fff}
 button.sec{background:#312e81;color:#c7d2fe}
 button.warn{background:#dc2626}
@@ -20,20 +22,24 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
 .sub{text-align:center;color:#a5b4fc;margin-bottom:24px}
 .stack{display:flex;flex-direction:column;gap:10px}
 .row{display:flex;gap:8px;align-items:center}
-.box{background:#312e81;border-radius:12px;padding:14px;margin-bottom:12px}
-.code{font-size:36px;letter-spacing:8px;text-align:center;font-weight:800;color:#fde68a}
+.box{background:rgba(49,46,129,.72);border:1px solid rgba(165,180,252,.18);border-radius:14px;padding:14px;margin-bottom:12px}
+.code{font-family:Georgia,serif;font-size:36px;letter-spacing:8px;text-align:center;font-weight:700;color:#fcd34d}
 .small{font-size:12px;color:#a5b4fc}
 /* gems */
-.gem{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
-.g-w{background:#e5e7eb;color:#1f2937;text-shadow:none}
-.g-u{background:#2563eb}.g-g{background:#16a34a}.g-r{background:#dc2626}.g-k{background:#374151}.g-y{background:#f59e0b;color:#1f2937;text-shadow:none}
+.gem{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
+  background-image:radial-gradient(circle at 34% 26%,rgba(255,255,255,.75),rgba(255,255,255,0) 42%),linear-gradient(160deg,var(--g1),var(--g2));
+  box-shadow:inset 0 -2px 4px rgba(0,0,0,.35),inset 0 1px 1px rgba(255,255,255,.4),0 1px 2px rgba(0,0,0,.45)}
+.g-w{--g1:#ffffff;--g2:#b9c3d2;color:#1f2937;text-shadow:none}
+.g-u{--g1:#60a5fa;--g2:#1d4ed8}.g-g{--g1:#4ade80;--g2:#15803d}
+.g-r{--g1:#f87171;--g2:#b91c1c}.g-k{--g1:#64748b;--g2:#1e293b}
+.g-y{--g1:#fcd34d;--g2:#d97706;color:#422006;text-shadow:none}
 /* game layout */
 #game{padding:8px 8px 120px}
 .top{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 6px}
-.turnbar{background:#312e81;border-radius:8px;padding:6px 10px;font-size:13px;flex:1;margin:0 8px;text-align:center}
+.turnbar{background:rgba(49,46,129,.8);border-radius:8px;padding:6px 10px;font-size:13px;flex:1;margin:0 8px;text-align:center}
 .turnbar.me{background:#f59e0b;color:#1f2937;font-weight:800}
 .opps{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px}
-.opp{flex:0 0 auto;min-width:96px;background:#312e81;border-radius:10px;padding:6px 8px;border:2px solid transparent}
+.opp{flex:0 0 auto;min-width:96px;background:rgba(49,46,129,.75);border-radius:10px;padding:6px 8px;border:2px solid transparent}
 .opp.cur{border-color:#f59e0b}
 .opp .nm{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 .opp .pt{color:#fde68a;font-weight:800}
@@ -41,31 +47,42 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
 .mini .gem{width:16px;height:16px;font-size:10px}
 .mini .bn{width:16px;height:16px;border-radius:3px;font-size:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
 .nobles{display:flex;gap:6px;overflow-x:auto;padding:4px 0}
-.noble{flex:0 0 auto;width:64px;background:linear-gradient(135deg,#7c3aed,#4c1d95);border-radius:8px;padding:5px;text-align:center;border:1px solid #a78bfa}
+.noble{flex:0 0 auto;width:64px;background:linear-gradient(150deg,#6d28d9,#3b1178);border-radius:8px;padding:5px;text-align:center;border:1px solid #a78bfa;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.noble .pt{font-family:Georgia,serif}
 .noble .pt{font-weight:800;color:#fde68a}
 .noble .req{display:flex;gap:2px;justify-content:center;margin-top:3px}
 .noble .bn{width:15px;height:15px;border-radius:3px;font-size:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
 .mrow{display:flex;gap:5px;margin:5px 0}
-.deck{flex:0 0 52px;height:78px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;border:2px dashed #6366f1;color:#c7d2fe;background:#2e2a6e}
-.deck.l3{border-color:#f472b6}.deck.l2{border-color:#facc15}.deck.l1{border-color:#4ade80}
+.deck{flex:0 0 52px;height:88px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;border:2px solid var(--fc,#6366f1);color:#ddd6fe;
+  background:repeating-linear-gradient(135deg,#2a2560 0 6px,#251f57 6px 12px);box-shadow:inset 0 0 12px rgba(0,0,0,.45)}
+.deck .lvn{font-family:Georgia,serif;font-size:17px;color:var(--fc)}
+.deck.l3{--fc:#e879a6}.deck.l2{--fc:#f0b429}.deck.l1{--fc:#4ade80}
 .deck.empty{opacity:.3}
-.card{flex:1;height:78px;border-radius:8px;background:#f8fafc;color:#1f2937;padding:4px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.4)}
-.card.empty{background:transparent;box-shadow:none}
-.card .ct{display:flex;justify-content:space-between;align-items:center}
-.card .ct .gem{width:18px;height:18px;font-size:10px;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
-.card .pts{font-weight:900;font-size:16px;line-height:1}
-.card .cost{display:flex;flex-wrap:wrap;gap:2px}
-.card .cost .gem{width:17px;height:17px;font-size:11px;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
-.card.ok{outline:3px solid #f59e0b}
-.bank{display:flex;justify-content:space-between;gap:4px;margin:8px 0;padding:8px;background:#312e81;border-radius:12px}
+.card{flex:1;height:88px;border-radius:9px;color:#1f2937;position:relative;overflow:hidden;
+  background:linear-gradient(165deg,#fcfdff 0%,#e8edf6 100%);
+  box-shadow:0 3px 6px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.85)}
+.card.empty{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(165,180,252,.12)}
+.card .glow{position:absolute;inset:0;background:radial-gradient(circle at 52% 44%,var(--cc),transparent 66%);opacity:.28}
+.card .art{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);width:52px;height:52px}
+.card .fr{position:absolute;inset:0;border-radius:9px;border:2px solid var(--fc);pointer-events:none}
+.card .fr::before{content:'';position:absolute;top:0;left:12%;right:12%;height:3px;background:var(--fc);border-radius:0 0 4px 4px}
+.card.l1{--fc:#4ade80}.card.l2{--fc:#f0b429}.card.l3{--fc:#e879a6}
+.card.l3 .fr{border-width:2.5px;box-shadow:inset 0 0 0 1px rgba(232,121,166,.35)}
+.card .ct{position:absolute;top:4px;left:5px;right:5px;display:flex;justify-content:space-between;align-items:flex-start}
+.card .ct .gem{width:17px;height:17px;font-size:10px}
+.card .pts{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:19px;line-height:1;color:#0f172a}
+.card .cost{position:absolute;left:4px;bottom:4px;right:4px;display:flex;gap:1.5px}
+.card .cost .gem{width:15px;height:15px;font-size:10px}
+.card.ok{box-shadow:0 3px 6px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 3px #f0b429}
+.bank{display:flex;justify-content:space-between;gap:4px;margin:8px 0;padding:9px;background:linear-gradient(180deg,rgba(60,55,140,.9),rgba(40,35,100,.9));border:1px solid rgba(165,180,252,.2);border-radius:14px;box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
 .tok{position:relative;text-align:center}
 .tok .gem{width:44px;height:44px;font-size:17px;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
 .tok.sel .gem{box-shadow:0 0 0 3px #f59e0b}
 .tok .badge{position:absolute;top:-6px;right:-4px;background:#f59e0b;color:#1f2937;border-radius:10px;font-size:11px;font-weight:800;padding:1px 6px}
 .tok.dis{opacity:.35}
-.mine{background:#0f172a;border-radius:12px;padding:8px;margin-top:6px}
+.mine{background:linear-gradient(180deg,rgba(17,14,45,.95),rgba(11,9,32,.95));border:1px solid rgba(165,180,252,.16);border-radius:14px;padding:10px;margin-top:6px}
 .mine .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.mine .hd .pt{font-size:20px;font-weight:900;color:#fde68a}
+.mine .hd .pt{font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fcd34d}
 .mygems{display:flex;gap:5px;flex-wrap:wrap}
 .mg{position:relative}
 .mg .gem{width:34px;height:34px;font-size:13px}
@@ -81,12 +98,12 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
 .hintbox .hm{font-size:14px;font-weight:700;line-height:1.4}
 .hintbox button{margin-top:8px;width:100%;padding:9px;background:#22d3ee;color:#083344;font-size:14px}
 .log{font-size:12px;color:#a5b4fc;margin-top:8px;line-height:1.5;max-height:54px;overflow:hidden}
-.actbar{position:fixed;left:0;right:0;bottom:0;background:#1e1b4b;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;box-shadow:0 -4px 12px rgba(0,0,0,.4);max-width:480px;margin:0 auto}
+.actbar{position:fixed;left:0;right:0;bottom:0;background:#191338;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;box-shadow:0 -4px 12px rgba(0,0,0,.4);max-width:480px;margin:0 auto}
 .actbar button{flex:1}
 /* modal */
 .mask{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;justify-content:center;z-index:50}
 .mask.on{display:flex}
-.modal{background:#312e81;border-radius:16px 16px 0 0;padding:18px;width:100%;max-width:480px}
+.modal{background:linear-gradient(180deg,#312e81,#241c52);border-radius:16px 16px 0 0;padding:18px;width:100%;max-width:480px}
 .modal h3{margin-bottom:10px;font-size:17px}
 .modal .card{height:110px;width:90px;flex:none;margin:0 auto 12px}
 .modal .card .cost .gem{width:22px;height:22px;font-size:13px}
@@ -101,6 +118,55 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="sp-w" viewBox="0 0 64 64">
+  <path d="M44 44 C56 42 60 28 54 18 C52 28 48 34 42 38 Z" fill="#e2e8f0"/>
+  <path d="M26 26 C36 26 44 34 45 44 C46 52 40 56 30 56 C20 56 14 52 15 44 C16 34 18 26 26 26 Z" fill="#f8fafc"/>
+  <path d="M16 18 L13 5 L24 13 Z" fill="#f8fafc"/><path d="M30 13 L40 4 L38 17 Z" fill="#f8fafc"/>
+  <circle cx="26" cy="22" r="10" fill="#f8fafc"/>
+  <path d="M6 24 L18 19 L18 28 Z" fill="#e2e8f0"/>
+  <circle cx="7" cy="24" r="2.2" fill="#334155"/><circle cx="24" cy="20" r="2.6" fill="#334155"/>
+</symbol>
+<symbol id="sp-u" viewBox="0 0 64 74">
+  <path d="M32 12 C39 12 45 18 47 26 C54 30 62 40 64 52 C54 46 44 44 38 48 C35 51 33 56 32 62 C31 56 29 51 26 48 C20 44 10 46 0 52 C2 40 10 30 17 26 C19 18 25 12 32 12 Z" fill="#3b82f6"/>
+  <path d="M32 18 C37 18 41 23 43 29 C48 33 53 40 55 47 C47 44 40 44 36 47 L32 53 L28 47 C24 44 17 44 9 47 C11 40 16 33 21 29 C23 23 27 18 32 18 Z" fill="#60a5fa" opacity=".4"/>
+  <path d="M27 11 C25 8 24 5 25 3 C27 5 28 8 29 11 Z" fill="#3b82f6"/><path d="M37 11 C39 8 40 5 39 3 C37 5 36 8 35 11 Z" fill="#3b82f6"/>
+  <circle cx="26" cy="23" r="2.4" fill="#eff6ff"/><circle cx="38" cy="23" r="2.4" fill="#eff6ff"/>
+  <path d="M31 58 C31 65 30 70 28 73 L34 73 C33 68 33 63 33 58 Z" fill="#3b82f6"/>
+</symbol>
+<symbol id="sp-g" viewBox="0 0 64 64">
+  <g stroke="#16a34a" stroke-width="3.2" stroke-linecap="round" fill="none">
+    <path d="M15 20 L11 8"/><path d="M13 13 L5 10"/><path d="M12 10 L14 3"/>
+    <path d="M23 19 L27 8"/><path d="M25 12 L33 9"/><path d="M26 9 L25 3"/>
+    <path d="M28 44 L27 58"/><path d="M36 45 L37 58"/><path d="M46 43 L48 57"/><path d="M52 40 L55 54"/>
+  </g>
+  <path d="M19 16 C24 16 26 20 25 25 L22 32 L16 30 L14 22 C14 18 16 16 19 16 Z" fill="#16a34a"/>
+  <path d="M22 30 C30 30 34 32 40 32 C50 32 56 34 57 40 C58 46 52 48 44 47 C36 46 28 47 24 44 C19 41 17 34 22 30 Z" fill="#16a34a"/>
+  <path d="M28 34 C36 34 44 35 50 37 C52 40 50 43 45 43 C38 43 31 42 27 40 Z" fill="#4ade80" opacity=".45"/>
+  <circle cx="19" cy="22" r="2.2" fill="#052e16"/>
+  <path d="M57 38 C62 34 64 30 62 26 C58 30 56 34 56 38 Z" fill="#22c55e"/>
+</symbol>
+<symbol id="sp-r" viewBox="0 0 68 64">
+  <path d="M20 32 C20 27 25 24 32 25 C39 26 44 30 48 33 C52 36 55 40 53 45 C51 49 45 49 40 47 C34 45 28 46 24 45 C20 44 19 38 20 32 Z" fill="#dc2626"/>
+  <path d="M13 23 L28 26 L28 44 L14 39 Z" fill="#dc2626"/>
+  <path d="M21 30 C21 24 18 21 13 21 C8 21 5 25 5 30 C5 35 8 39 13 39 C18 39 21 36 21 30 Z" fill="#dc2626"/>
+  <path d="M6 28 L1 30 L6 33 Z" fill="#dc2626"/>
+  <g stroke="#dc2626" stroke-width="4" stroke-linecap="round" fill="none"><path d="M26 45 L23 55"/><path d="M44 47 L47 56"/></g>
+  <path d="M52 42 C61 43 66 35 64 24 C59 29 55 28 53 32 C51 28 47 27 46 23 C42 32 45 42 52 42 Z" fill="#f97316"/>
+  <path d="M54 38 C58 38 60 33 59 28 C57 31 55 30 54 33 C53 30 51 30 50 28 C49 33 51 38 54 38 Z" fill="#fbbf24"/>
+  <path d="M27 31 C34 31 41 33 47 36 C49 39 47 42 42 41 C36 40 30 38 26 36 Z" fill="#f87171" opacity=".4"/>
+  <circle cx="11" cy="28" r="2.2" fill="#450a0a"/>
+</symbol>
+<symbol id="sp-k" viewBox="0 0 68 64">
+  <path d="M22 26 C30 22 42 24 50 32 C58 40 58 50 50 54 C42 58 30 54 24 46 C18 38 16 30 22 26 Z" fill="#334155"/>
+  <circle cx="20" cy="22" r="9" fill="#334155"/>
+  <path d="M11 22 L2 26 L11 28 Z" fill="#cbd5e1"/>
+  <path d="M28 30 C36 28 46 32 52 40 C46 42 38 40 32 36 Z" fill="#64748b" opacity=".5"/>
+  <path d="M50 50 C58 50 64 46 66 40 C60 40 54 42 50 46 Z" fill="#1e293b"/>
+  <g stroke="#475569" stroke-width="3" stroke-linecap="round" fill="none"><path d="M32 54 L31 62"/><path d="M42 54 L43 62"/></g>
+  <circle cx="19" cy="20" r="3.2" fill="#e2e8f0"/><circle cx="19" cy="20" r="1.4" fill="#0f172a"/>
+</symbol>
+</defs></svg>
 
 <!-- 홈 -->
 <div id="home" class="screen on">
@@ -485,10 +551,16 @@ $('nameIn').value=localStorage.gg_name||'';
 /* ================= 렌더 ================= */
 const gem=(c,n,cls='')=>`<span class="gem g-${c} ${cls}">${n??''}</span>`;
 const bn=(c,n)=>`<span class="bn g-${c}">${n}</span>`;
+const CGLOW={w:'rgba(148,163,184,.55)',u:'rgba(59,130,246,.5)',g:'rgba(34,197,94,.5)',r:'rgba(220,38,38,.45)',k:'rgba(71,85,105,.5)'};
 function cardHTML(id,extra='',cls=''){
   if(id==null) return `<div class="card empty"></div>`;
   const c=CARDS[id];
-  return `<div class="card ${cls}" ${extra}><div class="ct"><span class="pts">${c.p||''}</span>${gem(c.col,'')}</div><div class="cost">${COLS.filter(k=>c.cost[k]).map(k=>gem(k,c.cost[k])).join('')}</div></div>`;
+  return `<div class="card l${c.lv} ${cls}" style="--cc:${CGLOW[c.col]}" ${extra}>
+    <div class="glow"></div>
+    <svg class="art" viewBox="0 0 64 74" preserveAspectRatio="xMidYMid meet"><use href="#sp-${c.col}" x="0" y="0" width="64" height="74"/></svg>
+    <div class="fr"></div>
+    <div class="ct"><span class="pts">${c.p||''}</span>${gem(c.col,'')}</div>
+    <div class="cost">${COLS.filter(k=>c.cost[k]).map(k=>gem(k,c.cost[k])).join('')}</div></div>`;
 }
 function hintText(a){
   if(a.type==='take'){
@@ -528,7 +600,7 @@ function render(){
     <div class="mini">${['w','u','g','r','k','y'].map(c=>p.gems[c]?gem(c,p.gems[c]):'').join('')}</div>
     <div class="small">예약 ${p.reserved.length} · 귀족 ${p.nobles.length}</div></div>`).join('');
   $('nobles').innerHTML=state.nobles.map(id=>`<div class="noble"><div class="pt">3</div><div class="req">${Object.entries(NOBLES[id].req).map(([c,n])=>bn(c,n)).join('')}</div></div>`).join('')||'<span class="small">없음</span>';
-  $('market').innerHTML=[3,2,1].map(l=>`<div class="mrow"><div class="deck l${l} ${state.decks[l].length?'':'empty'} ${hint&&hint.type==='reserve'&&hint.idx<0&&hint.lv===l?'hintc':''}" data-lv="${l}"><div>Lv${l}</div><div class="small">${state.decks[l].length}장</div></div>${state.market[l].map((id,idx)=>cardHTML(id,`data-lv="${l}" data-idx="${idx}"`,(mine&&id!=null&&costCheck(mine,CARDS[id]).ok?'ok ':'')+(hint&&hint.lv===l&&hint.idx===idx?'hintc':''))).join('')}</div>`).join('');
+  $('market').innerHTML=[3,2,1].map(l=>`<div class="mrow"><div class="deck l${l} ${state.decks[l].length?'':'empty'} ${hint&&hint.type==='reserve'&&hint.idx<0&&hint.lv===l?'hintc':''}" data-lv="${l}"><div class="lvn">${l}단계</div><div class="small">${state.decks[l].length}장</div></div>${state.market[l].map((id,idx)=>cardHTML(id,`data-lv="${l}" data-idx="${idx}"`,(mine&&id!=null&&costCheck(mine,CARDS[id]).ok?'ok ':'')+(hint&&hint.lv===l&&hint.idx===idx?'hintc':''))).join('')}</div>`).join('');
   $('bank').innerHTML=['w','u','g','r','k','y'].map(c=>`<div class="tok ${sel[c]?'sel':''} ${state.bank[c]?'':'dis'}" data-c="${c}">${gem(c,state.bank[c])}${sel[c]?`<span class="badge">+${sel[c]}</span>`:''}</div>`).join('');
   if(mine){
     $('mine').innerHTML=`<div class="hd"><div><b>${mine.name}</b> <span class="small">카드 ${mine.cards.length}장 · 보석 ${total(mine.gems)}/10</span></div><div class="pt">${mine.pts}점</div></div>
@@ -688,7 +760,7 @@ const ui={
     modalCard=o; const me=state.players[myIdx()];
     const id=o.from==='res'?o.id:(o.idx<0?null:state.market[o.lv][o.idx]);
     $('cmTitle').textContent=o.idx<0?`Lv${o.lv} 덱에서 예약`:(o.from==='res'?'예약 카드':`Lv${o.lv} 카드`);
-    $('cmCard').innerHTML=id==null?`<div class="deck l${o.lv}" style="margin:0 auto 12px;width:90px;height:110px">Lv${o.lv}<br>?</div>`:cardHTML(id);
+    $('cmCard').innerHTML=id==null?`<div class="deck l${o.lv}" style="margin:0 auto 12px;width:90px;height:110px"><div class="lvn">${o.lv}단계</div><div class="small">뒷면</div></div>`:cardHTML(id);
     let info='';
     if(id!=null){ const cc=costCheck(me,CARDS[id]); info=cc.ok?(cc.gold?`구매 가능 (금 ${cc.gold}개 사용)`:'구매 가능'):`보석 ${cc.gold}개 부족`; $('cmBuy').disabled=!cc.ok; }
     else { $('cmBuy').disabled=true; info='덱 맨 위 카드를 보지 않고 예약'; }
