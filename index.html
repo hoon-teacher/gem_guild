@@ -178,7 +178,7 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
   <div class="hintbox" id="hintbox">
     <div class="ht">🍫 초코파이 치트 · 추천 행동</div>
     <div class="hm" id="hintMsg"></div>
-    <button onclick="ui.doHint()">이대로 하기</button>
+    <button id="hintGo" onclick="ui.doHint()">이대로 하기</button>
   </div>
   <div class="log" id="log"></div>
 </div>
@@ -370,11 +370,84 @@ function withDiscard(a,pl,needMap,gold){
   a.discard=d; return a;
 }
 
+
+/* ================= 치트 AI (초코파이 전용) — 전탐색 + 평가함수 + 3수 읽기 ================= */
+const AP={W:170,WF:500,BON:9,DEM:1.6,GOLD:7,GEM:3.2,NOB:140,CP:11,CB:7,DIST:1.6,TOPN:3,RESM:1.6,OPP:0.75};
+function shortfall(pl,card){let t=0;for(const c of COLS)t+=Math.max(0,(card.cost[c]||0)-pl.bonus[c]-pl.gems[c]);return Math.max(0,t-pl.gems.y);}
+function mkIds(s){const a=[];[1,2,3].forEach(l=>s.market[l].forEach(id=>{if(id!=null)a.push(id);}));return a;}
+function evalP(s,pi){
+  const pl=s.players[pi], W=s.final?AP.WF:AP.W;
+  let v=pl.pts*W;
+  const mk=mkIds(s), dem={w:0,u:0,g:0,r:0,k:0};
+  mk.forEach(id=>{const c=CARDS[id],d=shortfall(pl,c);COLS.forEach(k=>{if(c.cost[k])dem[k]+=c.cost[k]/(1+d);});});
+  s.nobles.forEach(nid=>{const r=NOBLES[nid].req;COLS.forEach(k=>{if(r[k])dem[k]+=r[k]*1.3;});});
+  COLS.forEach(c=>v+=pl.bonus[c]*(AP.BON+dem[c]*AP.DEM));
+  v+=pl.gems.y*AP.GOLD;
+  COLS.forEach(c=>v+=Math.min(pl.gems[c],4)*AP.GEM+Math.max(0,pl.gems[c]-4)*0.4);
+  s.nobles.forEach(nid=>{const r=NOBLES[nid].req;let hh=0,nn=0;for(const c in r){hh+=Math.min(pl.bonus[c],r[c]);nn+=r[c];}v+=Math.pow(hh/nn,3)*AP.NOB;});
+  const opts=mk.map(id=>CARDS[id]).map(c=>(c.p*AP.CP+AP.CB+c.lv*2)/(1+shortfall(pl,c)*AP.DIST)).sort((a,b)=>b-a).slice(0,AP.TOPN);
+  v+=opts.reduce((a,b)=>a+b,0);
+  pl.reserved.forEach(id=>{const c=CARDS[id];v+=AP.RESM*(c.p*AP.CP+AP.CB+c.lv*2)/(1+shortfall(pl,c)*AP.DIST);});
+  return v;
+}
+function evalState(s,pi){
+  const me=s.players[pi];
+  if(s.over) return s.winners.includes(me.id)?1e9:-1e9;
+  let opp=-1e18; s.players.forEach((p,j)=>{if(j!==pi)opp=Math.max(opp,evalP(s,j));});
+  return evalP(s,pi)-AP.OPP*opp;
+}
+function fillDiscard(s,pl,a){
+  const g={...pl.gems}; if(a.gems) for(const c in a.gems) g[c]+=a.gems[c];
+  if(a.type==='reserve'&&s.bank.y>0) g.y++;
+  let over=Object.values(g).reduce((x,y)=>x+y,0)-10; if(over<=0) return a;
+  const need={w:0,u:0,g:0,r:0,k:0};
+  mkIds(s).concat(pl.reserved).forEach(id=>{const c=CARDS[id];COLS.forEach(k=>{const n=Math.max(0,(c.cost[k]||0)-pl.bonus[k]);if(n)need[k]+=n;});});
+  const d={};
+  for(const c of COLS.slice().sort((x,y)=>need[x]-need[y])){while(over>0&&g[c]-(d[c]||0)>0){d[c]=(d[c]||0)+1;over--;}if(over<=0)break;}
+  while(over>0&&g.y-(d.y||0)>0){d.y=(d.y||0)+1;over--;}
+  return {...a,discard:d};
+}
+function genActions(s,pi){
+  const pl=s.players[pi], out=[], av=COLS.filter(c=>s.bank[c]>0);
+  for(let i=0;i<av.length;i++)for(let j=i+1;j<av.length;j++)for(let k=j+1;k<av.length;k++)out.push({type:'take',gems:{[av[i]]:1,[av[j]]:1,[av[k]]:1}});
+  if(av.length===2)out.push({type:'take',gems:{[av[0]]:1,[av[1]]:1}});
+  if(av.length===1)out.push({type:'take',gems:{[av[0]]:1}});
+  COLS.forEach(c=>{if(s.bank[c]>=4)out.push({type:'take',gems:{[c]:2}});});
+  [1,2,3].forEach(l=>s.market[l].forEach((id,idx)=>{if(id==null)return;out.push({type:'buy',from:'mk',lv:l,idx});if(pl.reserved.length<3)out.push({type:'reserve',lv:l,idx});}));
+  pl.reserved.forEach(id=>out.push({type:'buy',from:'res',id}));
+  if(pl.reserved.length<3)[1,2,3].forEach(l=>{if(s.decks[l].length)out.push({type:'reserve',lv:l,idx:-1});});
+  return out.map(a=>fillDiscard(s,pl,a));
+}
+function smartAction(s,pi,deep){
+  const scored=[];
+  for(const a of genActions(s,pi)){const r=applyAction(s,pi,a);if(r.err)continue;scored.push({a,s:r.s,v:evalState(r.s,pi)});}
+  if(!scored.length)return null;
+  scored.sort((x,y)=>y.v-x.v);
+  if(!deep)return scored[0].a;
+  const top=scored.slice(0,deep>=2?8:6);
+  for(const o of top){
+    if(o.s.over){o.v2=o.v;continue;}
+    let cur=o.s;
+    for(let k=0;k<s.players.length-1;k++){
+      if(cur.turn===pi||cur.over)break;
+      const rep=smartAction(cur,cur.turn,0); if(!rep)break;
+      const rr=applyAction(cur,cur.turn,rep); if(rr.err)break; cur=rr.s;
+    }
+    if(deep>=2&&!cur.over&&cur.turn===pi){
+      let bv=-1e18;
+      for(const a2 of genActions(cur,pi)){const r2=applyAction(cur,pi,a2);if(r2.err)continue;const v2=evalState(r2.s,pi);if(v2>bv)bv=v2;}
+      o.v2=bv>-1e17?bv:evalState(cur,pi);
+    } else o.v2=evalState(cur,pi);
+  }
+  top.sort((x,y)=>y.v2-x.v2);
+  return top[0].a;
+}
+
 /* ================= 상태 ================= */
 let mode=null; // 'local' | 'online'
 let state=null, roomCode=null, unsub=null, isHost=false, roomData=null;
 const pid=localStorage.gg_pid||(localStorage.gg_pid=Math.random().toString(36).slice(2,10));
-let sel={}, pending=null, modalCard=null, hint=null;
+let sel={}, pending=null, modalCard=null, hint=null, hintKey=null, hintCalc=null;
 const $=id=>document.getElementById(id);
 const myIdx=()=>mode==='local'?0:(state?state.players.findIndex(p=>p.id===pid):-1);
 const myTurn=()=>state&&!state.over&&state.turn===myIdx();
@@ -400,12 +473,20 @@ function hintText(a){
     return a.from==='res'?`예약해둔 ${CN[c.col]} 카드 구매${c.p?` (+${c.p}점)`:''}`:`Lv${a.lv} ${a.idx+1}번째 ${CN[c.col]} 카드 구매${c.p?` (+${c.p}점)`:''}`; }
   return '';
 }
+function cheatOn(){ const me=myIdx(); return me>=0&&state&&state.players[me]&&state.players[me].name.trim()==='초코파이'; }
 function calcHint(){
+  const me=myIdx();
+  if(!cheatOn()||state.over||state.turn!==me){ hint=null; hintKey=null; return; }
+  if(hintKey===state.v) return;          // 이미 계산됨
   hint=null;
-  const me=myIdx(); if(me<0||!state||state.over) return;
-  if(state.players[me].name.trim()!=='초코파이') return;
-  if(state.turn!==me) return;
-  try{ hint=botAction(state,me); }catch(e){ hint=null; }
+  if(hintCalc===state.v) return;         // 계산 중
+  hintCalc=state.v;
+  const key=state.v, snap=clone(state);
+  setTimeout(()=>{
+    let a=null;
+    try{ a=smartAction(snap,me,2); }catch(e){ console.warn(e); }
+    if(state&&state.v===key){ hint=a; hintKey=key; render(); }
+  },30);
 }
 function render(){
   if(!state) return;
@@ -429,8 +510,10 @@ function render(){
       ${mine.nobles.length?`<div class="lbl">내 귀족</div><div class="nobles">${mine.nobles.map(id=>`<div class="noble"><div class="pt">3</div></div>`).join('')}</div>`:''}
       <div class="lbl">예약 카드 (${mine.reserved.length}/3)</div><div class="res">${mine.reserved.map(id=>cardHTML(id,`data-res="${id}"`,(costCheck(mine,CARDS[id]).ok?'ok ':'')+(hint&&hint.from==='res'&&hint.id===id?'hintc':''))).join('')||'<span class="small">없음</span>'}</div>`;
   }
-  $('hintbox').classList.toggle('on',!!hint);
-  if(hint) $('hintMsg').textContent=hintText(hint);
+  const showHint=cheatOn()&&!state.over&&state.turn===me;
+  $('hintbox').classList.toggle('on',showHint);
+  if(showHint) $('hintMsg').textContent=hint?hintText(hint):'최선수 계산 중…';
+  $('hintGo').style.display=hint?'':'none';
   $('log').innerHTML=state.log.slice(0,3).join('<br>');
   $('actbar').style.display=Object.keys(sel).length?'flex':'none';
   if(state.over) showEnd();
