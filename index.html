@@ -73,7 +73,8 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
 .res{display:flex;gap:5px;margin-top:10px}
 .res .card{flex:0 0 72px}
 .lbl{font-size:11px;color:#94a3b8;margin:8px 0 3px}
-.card.hintc{outline:3px dashed #22d3ee;outline-offset:-2px}
+.card.hintc,.deck.hintc{outline:3px dashed #22d3ee;outline-offset:-2px}
+.deck.hintc{border-color:#22d3ee}
 .hintbox{background:linear-gradient(135deg,#0e7490,#155e75);border:1px solid #22d3ee;border-radius:12px;padding:10px 12px;margin-top:8px;display:none}
 .hintbox.on{display:block}
 .hintbox .ht{font-size:12px;color:#a5f3fc;font-weight:700;margin-bottom:4px}
@@ -418,6 +419,32 @@ function genActions(s,pi){
   if(pl.reserved.length<3)[1,2,3].forEach(l=>{if(s.decks[l].length)out.push({type:'reserve',lv:l,idx:-1});});
   return out.map(a=>fillDiscard(s,pl,a));
 }
+const SW={2:6,3:8};
+function oppReply(s){ return botAction(s,s.turn); }
+function advance(s,pi){
+  let cur=s,guard=0;
+  while(!cur.over&&cur.turn!==pi&&guard++<4){
+    const a=oppReply(cur); if(!a)break;
+    const r=applyAction(cur,cur.turn,a); if(r.err)break; cur=r.s;
+  }
+  return cur;
+}
+function search(s,pi,d){
+  const scored=[];
+  for(const a of genActions(s,pi)){const r=applyAction(s,pi,a);if(r.err)continue;scored.push({a,s:r.s,v:evalState(r.s,pi)});}
+  if(!scored.length) return {v:evalState(s,pi),a:null};
+  scored.sort((x,y)=>y.v-x.v);
+  if(d<=1) return {v:scored[0].v,a:scored[0].a};
+  const top=scored.slice(0,SW[d]||6);
+  let best=null;
+  for(const o of top){
+    let v;
+    if(o.s.over) v=evalState(o.s,pi);
+    else { const cur=advance(o.s,pi); v=cur.over?evalState(cur,pi):search(cur,pi,d-1).v; }
+    if(!best||v>best.v) best={v,a:o.a};
+  }
+  return best;
+}
 function smartAction(s,pi,deep){
   const scored=[];
   for(const a of genActions(s,pi)){const r=applyAction(s,pi,a);if(r.err)continue;scored.push({a,s:r.s,v:evalState(r.s,pi)});}
@@ -484,7 +511,7 @@ function calcHint(){
   const key=state.v, snap=clone(state);
   setTimeout(()=>{
     let a=null;
-    try{ a=smartAction(snap,me,2); }catch(e){ console.warn(e); }
+    try{ a=search(snap,me,3).a; }catch(e){ console.warn(e); }
     if(state&&state.v===key){ hint=a; hintKey=key; render(); }
   },30);
 }
@@ -501,7 +528,7 @@ function render(){
     <div class="mini">${['w','u','g','r','k','y'].map(c=>p.gems[c]?gem(c,p.gems[c]):'').join('')}</div>
     <div class="small">예약 ${p.reserved.length} · 귀족 ${p.nobles.length}</div></div>`).join('');
   $('nobles').innerHTML=state.nobles.map(id=>`<div class="noble"><div class="pt">3</div><div class="req">${Object.entries(NOBLES[id].req).map(([c,n])=>bn(c,n)).join('')}</div></div>`).join('')||'<span class="small">없음</span>';
-  $('market').innerHTML=[3,2,1].map(l=>`<div class="mrow"><div class="deck l${l} ${state.decks[l].length?'':'empty'}" data-lv="${l}"><div>Lv${l}</div><div class="small">${state.decks[l].length}장</div></div>${state.market[l].map((id,idx)=>cardHTML(id,`data-lv="${l}" data-idx="${idx}"`,(mine&&id!=null&&costCheck(mine,CARDS[id]).ok?'ok ':'')+(hint&&hint.lv===l&&hint.idx===idx?'hintc':''))).join('')}</div>`).join('');
+  $('market').innerHTML=[3,2,1].map(l=>`<div class="mrow"><div class="deck l${l} ${state.decks[l].length?'':'empty'} ${hint&&hint.type==='reserve'&&hint.idx<0&&hint.lv===l?'hintc':''}" data-lv="${l}"><div>Lv${l}</div><div class="small">${state.decks[l].length}장</div></div>${state.market[l].map((id,idx)=>cardHTML(id,`data-lv="${l}" data-idx="${idx}"`,(mine&&id!=null&&costCheck(mine,CARDS[id]).ok?'ok ':'')+(hint&&hint.lv===l&&hint.idx===idx?'hintc':''))).join('')}</div>`).join('');
   $('bank').innerHTML=['w','u','g','r','k','y'].map(c=>`<div class="tok ${sel[c]?'sel':''} ${state.bank[c]?'':'dis'}" data-c="${c}">${gem(c,state.bank[c])}${sel[c]?`<span class="badge">+${sel[c]}</span>`:''}</div>`).join('');
   if(mine){
     $('mine').innerHTML=`<div class="hd"><div><b>${mine.name}</b> <span class="small">카드 ${mine.cards.length}장 · 보석 ${total(mine.gems)}/10</span></div><div class="pt">${mine.pts}점</div></div>
