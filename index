@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1e1b4b">
+<title>보석 길드</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:#1e1b4b;color:#f1f5f9;font-size:14px;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer;background:#6366f1;color:#fff}
+button.sec{background:#312e81;color:#c7d2fe}
+button.warn{background:#dc2626}
+button:disabled{opacity:.4}
+input{font-family:inherit;width:100%;padding:12px;font-size:16px;border-radius:10px;border:1px solid #4338ca;background:#312e81;color:#fff;outline:0}
+.screen{display:none;min-height:100%;padding:16px;max-width:480px;margin:0 auto}
+.screen.on{display:block}
+h1{font-size:28px;text-align:center;margin:30px 0 6px}
+.sub{text-align:center;color:#a5b4fc;margin-bottom:24px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;align-items:center}
+.box{background:#312e81;border-radius:12px;padding:14px;margin-bottom:12px}
+.code{font-size:36px;letter-spacing:8px;text-align:center;font-weight:800;color:#fde68a}
+.small{font-size:12px;color:#a5b4fc}
+/* gems */
+.gem{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.g-w{background:#e5e7eb;color:#1f2937;text-shadow:none}
+.g-u{background:#2563eb}.g-g{background:#16a34a}.g-r{background:#dc2626}.g-k{background:#374151}.g-y{background:#f59e0b;color:#1f2937;text-shadow:none}
+/* game layout */
+#game{padding:8px 8px 120px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 6px}
+.turnbar{background:#312e81;border-radius:8px;padding:6px 10px;font-size:13px;flex:1;margin:0 8px;text-align:center}
+.turnbar.me{background:#f59e0b;color:#1f2937;font-weight:800}
+.opps{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px}
+.opp{flex:0 0 auto;min-width:96px;background:#312e81;border-radius:10px;padding:6px 8px;border:2px solid transparent}
+.opp.cur{border-color:#f59e0b}
+.opp .nm{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.opp .pt{color:#fde68a;font-weight:800}
+.mini{display:flex;gap:2px;margin-top:3px;flex-wrap:wrap}
+.mini .gem{width:16px;height:16px;font-size:10px}
+.mini .bn{width:16px;height:16px;border-radius:3px;font-size:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.nobles{display:flex;gap:6px;overflow-x:auto;padding:4px 0}
+.noble{flex:0 0 auto;width:64px;background:linear-gradient(135deg,#7c3aed,#4c1d95);border-radius:8px;padding:5px;text-align:center;border:1px solid #a78bfa}
+.noble .pt{font-weight:800;color:#fde68a}
+.noble .req{display:flex;gap:2px;justify-content:center;margin-top:3px}
+.noble .bn{width:15px;height:15px;border-radius:3px;font-size:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.mrow{display:flex;gap:5px;margin:5px 0}
+.deck{flex:0 0 52px;height:78px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;border:2px dashed #6366f1;color:#c7d2fe;background:#2e2a6e}
+.deck.l3{border-color:#f472b6}.deck.l2{border-color:#facc15}.deck.l1{border-color:#4ade80}
+.deck.empty{opacity:.3}
+.card{flex:1;height:78px;border-radius:8px;background:#f8fafc;color:#1f2937;padding:4px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.card.empty{background:transparent;box-shadow:none}
+.card .ct{display:flex;justify-content:space-between;align-items:center}
+.card .ct .gem{width:18px;height:18px;font-size:10px;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.card .pts{font-weight:900;font-size:16px;line-height:1}
+.card .cost{display:flex;flex-wrap:wrap;gap:2px}
+.card .cost .gem{width:17px;height:17px;font-size:11px;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.card.ok{outline:3px solid #f59e0b}
+.bank{display:flex;justify-content:space-between;gap:4px;margin:8px 0;padding:8px;background:#312e81;border-radius:12px}
+.tok{position:relative;text-align:center}
+.tok .gem{width:44px;height:44px;font-size:17px;box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+.tok.sel .gem{box-shadow:0 0 0 3px #f59e0b}
+.tok .badge{position:absolute;top:-6px;right:-4px;background:#f59e0b;color:#1f2937;border-radius:10px;font-size:11px;font-weight:800;padding:1px 6px}
+.tok.dis{opacity:.35}
+.mine{background:#0f172a;border-radius:12px;padding:8px;margin-top:6px}
+.mine .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.mine .hd .pt{font-size:20px;font-weight:900;color:#fde68a}
+.mygems{display:flex;gap:5px;flex-wrap:wrap}
+.mg{position:relative}
+.mg .gem{width:34px;height:34px;font-size:13px}
+.mg .bn{position:absolute;bottom:-6px;right:-6px;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid #0f172a}
+.res{display:flex;gap:5px;margin-top:10px}
+.res .card{flex:0 0 72px}
+.lbl{font-size:11px;color:#94a3b8;margin:8px 0 3px}
+.log{font-size:12px;color:#a5b4fc;margin-top:8px;line-height:1.5;max-height:54px;overflow:hidden}
+.actbar{position:fixed;left:0;right:0;bottom:0;background:#1e1b4b;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;box-shadow:0 -4px 12px rgba(0,0,0,.4);max-width:480px;margin:0 auto}
+.actbar button{flex:1}
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.mask.on{display:flex}
+.modal{background:#312e81;border-radius:16px 16px 0 0;padding:18px;width:100%;max-width:480px}
+.modal h3{margin-bottom:10px;font-size:17px}
+.modal .card{height:110px;width:90px;flex:none;margin:0 auto 12px}
+.modal .card .cost .gem{width:22px;height:22px;font-size:13px}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#1f2937;padding:10px 18px;border-radius:20px;font-weight:700;z-index:99;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pl{background:#1e1b4b;border-radius:8px;padding:10px;display:flex;justify-content:space-between}
+.pulse{animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.rank{display:flex;justify-content:space-between;padding:8px 10px;background:#1e1b4b;border-radius:8px;margin-bottom:6px}
+.rank.win{background:#f59e0b;color:#1f2937;font-weight:800}
+</style>
+</head>
+<body>
+
+<!-- 홈 -->
+<div id="home" class="screen on">
+  <h1>💎 보석 길드</h1>
+  <p class="sub">보석을 모아 카드를 사고 15점을 먼저 만드세요</p>
+  <div class="box">
+    <div class="lbl">내 이름</div>
+    <input id="nameIn" maxlength="8" placeholder="닉네임">
+  </div>
+  <div class="stack">
+    <button onclick="ui.soloSetup()">🤖 혼자하기 (봇 대결)</button>
+    <button onclick="ui.createRoom()">🏠 방 만들기</button>
+    <div class="row">
+      <input id="codeIn" maxlength="4" placeholder="방 코드 4자리" style="text-transform:uppercase">
+      <button onclick="ui.joinRoom()" style="flex:none">참가</button>
+    </div>
+  </div>
+  <div class="box" style="margin-top:20px">
+    <div class="lbl">규칙 요약</div>
+    <div class="small" style="line-height:1.6">
+      내 차례에 셋 중 하나: ① 서로 다른 보석 3개 ② 같은 보석 2개(은행에 4개 이상일 때) ③ 카드 예약(금 1개 획득, 최대 3장) ④ 카드 구매<br>
+      카드는 보너스(할인)가 되고, 보석은 10개까지만 보유. 귀족 조건을 채우면 자동 방문(+3점). 15점 도달 시 그 라운드까지 진행 후 종료.
+    </div>
+  </div>
+</div>
+
+<!-- 솔로 설정 -->
+<div id="solo" class="screen">
+  <h1>🤖 봇 대결</h1>
+  <p class="sub">봇 수를 고르세요</p>
+  <div class="stack">
+    <button onclick="ui.startSolo(1)">봇 1명 (2인전)</button>
+    <button onclick="ui.startSolo(2)">봇 2명 (3인전)</button>
+    <button onclick="ui.startSolo(3)">봇 3명 (4인전)</button>
+    <button class="sec" onclick="ui.show('home')">← 뒤로</button>
+  </div>
+</div>
+
+<!-- 대기실 -->
+<div id="lobby" class="screen">
+  <h1>대기실</h1>
+  <div class="box">
+    <div class="small" style="text-align:center">방 코드</div>
+    <div class="code" id="lobbyCode">----</div>
+    <div class="row" style="margin-top:10px">
+      <button class="sec" style="flex:1" onclick="ui.copyCode()">코드 복사</button>
+      <button class="sec" style="flex:1" onclick="ui.shareLink()">링크 공유</button>
+    </div>
+  </div>
+  <div class="box">
+    <div class="lbl">참가자 <span id="lobbyCnt"></span></div>
+    <div class="plist" id="lobbyList"></div>
+  </div>
+  <div class="stack">
+    <button id="startBtn" onclick="ui.startOnline()">게임 시작</button>
+    <div class="small pulse" id="waitMsg" style="text-align:center">방장이 시작하기를 기다리는 중…</div>
+    <button class="sec" onclick="ui.leave()">나가기</button>
+  </div>
+</div>
+
+<!-- 게임 -->
+<div id="game" class="screen">
+  <div class="top">
+    <button class="sec" style="padding:6px 10px;font-size:12px" onclick="ui.leave()">나가기</button>
+    <div class="turnbar" id="turnbar"></div>
+    <div class="small" id="roundTxt"></div>
+  </div>
+  <div class="opps" id="opps"></div>
+  <div class="lbl">귀족</div>
+  <div class="nobles" id="nobles"></div>
+  <div class="lbl">카드 시장 (카드를 누르면 구매·예약)</div>
+  <div id="market"></div>
+  <div class="lbl">은행 (보석을 눌러 고르기)</div>
+  <div class="bank" id="bank"></div>
+  <div class="mine" id="mine"></div>
+  <div class="log" id="log"></div>
+</div>
+
+<div class="actbar" id="actbar" style="display:none">
+  <button class="sec" onclick="ui.clearSel()">선택 취소</button>
+  <button id="takeBtn" onclick="ui.confirmTake()">보석 가져오기</button>
+</div>
+
+<!-- 카드 모달 -->
+<div class="mask" id="cardMask" onclick="if(event.target===this)ui.closeModal()">
+  <div class="modal">
+    <h3 id="cmTitle">카드</h3>
+    <div id="cmCard"></div>
+    <div class="small" id="cmInfo" style="text-align:center;margin-bottom:12px"></div>
+    <div class="row">
+      <button id="cmBuy" style="flex:1" onclick="ui.doBuy()">구매</button>
+      <button id="cmRes" class="sec" style="flex:1" onclick="ui.doReserve()">예약</button>
+    </div>
+  </div>
+</div>
+
+<!-- 버리기 모달 -->
+<div class="mask" id="discMask">
+  <div class="modal">
+    <h3>보석이 10개를 넘어요</h3>
+    <div class="small" style="margin-bottom:10px">돌려줄 보석을 눌러 <b id="discNeed"></b>개 버리세요</div>
+    <div class="mygems" id="discGems" style="justify-content:center"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="sec" style="flex:1" onclick="ui.cancelDiscard()">취소</button>
+      <button id="discOk" style="flex:1" onclick="ui.okDiscard()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 종료 모달 -->
+<div class="mask" id="endMask">
+  <div class="modal">
+    <h3 id="endTitle">게임 종료</h3>
+    <div id="endList"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="sec" style="flex:1" onclick="ui.leave()">홈으로</button>
+      <button id="againBtn" style="flex:1" onclick="ui.again()">다시하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDbuQHBmsb75jW0pAW_KKgaCnKy1LKQ8C8",
+  authDomain: "come-on-1d076.firebaseapp.com",
+  projectId: "come-on-1d076",
+  storageBucket: "come-on-1d076.firebasestorage.app",
+  messagingSenderId: "377043328687",
+  appId: "1:377043328687:web:d1d859945ba76604f43e5a"
+};
+let db=null;
+try{ db=getFirestore(initializeApp(firebaseConfig)); }catch(e){ console.warn('firebase',e); }
+
+/* ================= 카드 데이터 ================= */
+const COLS=['w','u','g','r','k'];
+const CN={w:'백',u:'청',g:'녹',r:'적',k:'흑',y:'금'};
+const L1=[{p:0,c:[0,1,1,1,1]},{p:0,c:[0,1,2,1,1]},{p:0,c:[0,2,2,0,1]},{p:0,c:[0,0,3,0,0]},{p:0,c:[0,2,0,0,2]},{p:0,c:[0,3,1,0,1]},{p:0,c:[1,1,1,0,2]},{p:1,c:[0,0,0,0,4]}];
+const L2=[{p:1,c:[0,2,3,0,3]},{p:1,c:[0,3,0,2,3]},{p:2,c:[0,0,5,0,0]},{p:2,c:[0,4,2,0,1]},{p:2,c:[5,0,0,3,0]},{p:3,c:[6,0,0,0,0]}];
+const L3=[{p:3,c:[0,3,3,5,3]},{p:4,c:[0,0,7,0,0]},{p:4,c:[3,0,6,3,0]},{p:5,c:[3,0,7,0,0]}];
+const CARDS=[];
+[[1,L1],[2,L2],[3,L3]].forEach(([lv,T])=>{
+  COLS.forEach((col,ci)=>T.forEach(t=>{
+    const cost={};t.c.forEach((v,j)=>{if(v)cost[COLS[(ci+j)%5]]=v;});
+    CARDS.push({id:CARDS.length,lv,col,p:t.p,cost});
+  }));
+});
+const NOBLES=[];
+[[3,3,3,0,0],[4,4,0,0,0]].forEach(pat=>COLS.forEach((col,ci)=>{
+  const req={};pat.forEach((v,j)=>{if(v)req[COLS[(ci+j)%5]]=v;});
+  NOBLES.push({id:NOBLES.length,req});
+}));
+
+/* ================= 게임 엔진 ================= */
+const clone=o=>JSON.parse(JSON.stringify(o));
+const total=g=>Object.values(g).reduce((a,b)=>a+b,0);
+function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function newGame(players){
+  const n=players.length, gc=n===2?4:n===3?5:7;
+  const decks={},market={};
+  [1,2,3].forEach(l=>{const d=shuf(CARDS.filter(c=>c.lv===l).map(c=>c.id));market[l]=d.splice(0,4);decks[l]=d;});
+  return {
+    players:players.map(p=>({id:p.id,name:p.name,bot:!!p.bot,gems:{w:0,u:0,g:0,r:0,k:0,y:0},bonus:{w:0,u:0,g:0,r:0,k:0},cards:[],reserved:[],nobles:[],pts:0})),
+    bank:{w:gc,u:gc,g:gc,r:gc,k:gc,y:5},decks,market,
+    nobles:shuf(NOBLES.map(x=>x.id)).slice(0,n+1),
+    turn:0,round:1,final:false,over:false,winners:[],log:[],v:0
+  };
+}
+function costCheck(pl,card){ // {ok,gold,pay}
+  let gold=0;const pay={};
+  for(const c of COLS){const need=Math.max(0,(card.cost[c]||0)-pl.bonus[c]);const use=Math.min(need,pl.gems[c]);if(use)pay[c]=use;gold+=need-use;}
+  return {ok:gold<=pl.gems.y,gold,pay};
+}
+function refill(s,lv,idx){ s.market[lv][idx]=s.decks[lv].length?s.decks[lv].shift():null; }
+function applyAction(st,pi,a){
+  const s=clone(st), pl=s.players[pi], L=[];
+  if(a.type==='take'){
+    const ents=Object.entries(a.gems).filter(([c,n])=>n>0);
+    if(!ents.length) return {err:'보석을 골라주세요'};
+    if(ents.some(([c])=>c==='y')) return {err:'금은 예약으로만 얻어요'};
+    if(ents.length===1&&ents[0][1]===2){ if(s.bank[ents[0][0]]<4) return {err:'같은 색 2개는 은행에 4개 이상 있을 때만'}; }
+    else if(ents.length>3||ents.some(([c,n])=>n!==1)) return {err:'서로 다른 3개 또는 같은 색 2개만'};
+    for(const [c,n] of ents){ if(s.bank[c]<n) return {err:'은행에 보석이 부족해요'}; s.bank[c]-=n; pl.gems[c]+=n; }
+    L.push(`${pl.name} 보석 획득 ${ents.map(([c,n])=>CN[c]+n).join(' ')}`);
+  } else if(a.type==='reserve'){
+    if(pl.reserved.length>=3) return {err:'예약은 3장까지'};
+    let id;
+    if(a.idx<0){ if(!s.decks[a.lv].length) return {err:'덱이 비었어요'}; id=s.decks[a.lv].shift(); }
+    else { id=s.market[a.lv][a.idx]; if(id==null) return {err:'카드가 없어요'}; refill(s,a.lv,a.idx); }
+    pl.reserved.push(id);
+    if(s.bank.y>0){s.bank.y--;pl.gems.y++;}
+    L.push(`${pl.name} ${a.lv}단계 카드 예약`);
+  } else if(a.type==='buy'){
+    let id;
+    if(a.from==='res'){ const k=pl.reserved.indexOf(a.id); if(k<0) return {err:'예약 카드가 아니에요'}; id=a.id; }
+    else { id=s.market[a.lv][a.idx]; if(id==null) return {err:'카드가 없어요'}; }
+    const card=CARDS[id], cc=costCheck(pl,card);
+    if(!cc.ok) return {err:'보석이 부족해요'};
+    for(const [c,n] of Object.entries(cc.pay)){pl.gems[c]-=n;s.bank[c]+=n;}
+    pl.gems.y-=cc.gold; s.bank.y+=cc.gold;
+    if(a.from==='res') pl.reserved.splice(pl.reserved.indexOf(id),1); else refill(s,a.lv,a.idx);
+    pl.cards.push(id); pl.bonus[card.col]++; pl.pts+=card.p;
+    L.push(`${pl.name} ${CN[card.col]} 카드 구매${card.p?` (+${card.p})`:''}`);
+  } else return {err:'알 수 없는 행동'};
+  if(a.discard){ for(const [c,n] of Object.entries(a.discard)){ if(n>pl.gems[c]) return {err:'버릴 보석이 없어요'}; pl.gems[c]-=n; s.bank[c]+=n; } }
+  if(total(pl.gems)>10) return {err:'보석은 10개까지만'};
+  // 귀족
+  const nb=s.nobles.find(nid=>Object.entries(NOBLES[nid].req).every(([c,n])=>pl.bonus[c]>=n));
+  if(nb!=null){ s.nobles=s.nobles.filter(x=>x!==nb); pl.nobles.push(nb); pl.pts+=3; L.push(`👑 ${pl.name} 귀족 방문 (+3)`); }
+  if(pl.pts>=15&&!s.final){ s.final=true; L.push(`🔥 ${pl.name} 15점 도달! 마지막 라운드`); }
+  s.turn=(s.turn+1)%s.players.length;
+  if(s.turn===0){ if(s.final){ s.over=true; const best=Math.max(...s.players.map(p=>p.pts)); const cand=s.players.filter(p=>p.pts===best); const fc=Math.min(...cand.map(p=>p.cards.length)); s.winners=cand.filter(p=>p.cards.length===fc).map(p=>p.id); L.push('🏆 게임 종료'); } else s.round++; }
+  s.log=[...L,...s.log].slice(0,12); s.v=(s.v||0)+1;
+  return {s};
+}
+
+/* ================= 봇 ================= */
+function botAction(s,pi){
+  const pl=s.players[pi];
+  const cands=[];
+  [1,2,3].forEach(l=>s.market[l].forEach((id,idx)=>{if(id!=null)cands.push({id,lv:l,idx,from:'mk'});}));
+  pl.reserved.forEach(id=>cands.push({id,from:'res'}));
+  // 1. 살 수 있으면 가장 좋은 카드 구매
+  const buy=cands.filter(c=>costCheck(pl,CARDS[c.id]).ok)
+    .sort((a,b)=>(CARDS[b.id].p*10+CARDS[b.id].lv)-(CARDS[a.id].p*10+CARDS[a.id].lv)||(a.from==='res'?-1:1))[0];
+  if(buy) return {type:'buy',...buy};
+  // 2. 목표 카드 = 부족 보석 가장 적은 카드(점수 가중)
+  const need=c=>{let m={},t=0;for(const k of COLS){const n=Math.max(0,(CARDS[c.id].cost[k]||0)-pl.bonus[k]-pl.gems[k]);if(n){m[k]=n;t+=n;}}return {m,t};};
+  const tgt=cands.map(c=>({...c,...need(c)})).sort((a,b)=>(a.t-CARDS[a.id].p*0.8)-(b.t-CARDS[b.id].p*0.8))[0];
+  const cur=total(pl.gems);
+  if(tgt){
+    const cols=Object.entries(tgt.m).filter(([c])=>s.bank[c]>0).sort((a,b)=>b[1]-a[1]);
+    if(cols.length===1&&cols[0][1]>=2&&s.bank[cols[0][0]]>=4&&cur<=8) return {type:'take',gems:{[cols[0][0]]:2}};
+    if(cols.length){ const g={}; cols.slice(0,3).forEach(([c])=>g[c]=1); return withDiscard({type:'take',gems:g},pl,tgt.m); }
+    if(pl.reserved.length<3&&tgt.from==='mk'&&tgt.t>3) return withDiscard({type:'reserve',lv:tgt.lv,idx:tgt.idx},pl,tgt.m,true);
+  }
+  // 3. 아무 보석
+  const av=COLS.filter(c=>s.bank[c]>0).slice(0,3);
+  if(av.length){const g={};av.forEach(c=>g[c]=1);return withDiscard({type:'take',gems:g},pl,{});}
+  if(pl.reserved.length<3){ for(const l of [1,2,3]) if(s.decks[l].length) return withDiscard({type:'reserve',lv:l,idx:-1},pl,{},s.bank.y>0); }
+  return null;
+}
+function withDiscard(a,pl,needMap,gold){
+  const g={...pl.gems}; if(a.gems) for(const [c,n] of Object.entries(a.gems)) g[c]+=n; if(gold) g.y++;
+  let over=total(g)-10; if(over<=0) return a;
+  const d={}; const order=COLS.filter(c=>!needMap[c]).concat(COLS.filter(c=>needMap[c]));
+  for(const c of order){ while(over>0&&g[c]>0){g[c]--;d[c]=(d[c]||0)+1;over--;} if(over<=0)break; }
+  a.discard=d; return a;
+}
+
+/* ================= 상태 ================= */
+let mode=null; // 'local' | 'online'
+let state=null, roomCode=null, unsub=null, isHost=false, roomData=null;
+const pid=localStorage.gg_pid||(localStorage.gg_pid=Math.random().toString(36).slice(2,10));
+let sel={}, pending=null, modalCard=null;
+const $=id=>document.getElementById(id);
+const myIdx=()=>mode==='local'?0:(state?state.players.findIndex(p=>p.id===pid):-1);
+const myTurn=()=>state&&!state.over&&state.turn===myIdx();
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2000);}
+function myName(){const n=$('nameIn').value.trim();if(n)localStorage.gg_name=n;return n;}
+$('nameIn').value=localStorage.gg_name||'';
+
+/* ================= 렌더 ================= */
+const gem=(c,n,cls='')=>`<span class="gem g-${c} ${cls}">${n??''}</span>`;
+const bn=(c,n)=>`<span class="bn g-${c}">${n}</span>`;
+function cardHTML(id,extra='',cls=''){
+  if(id==null) return `<div class="card empty"></div>`;
+  const c=CARDS[id];
+  return `<div class="card ${cls}" ${extra}><div class="ct"><span class="pts">${c.p||''}</span>${gem(c.col,'')}</div><div class="cost">${COLS.filter(k=>c.cost[k]).map(k=>gem(k,c.cost[k])).join('')}</div></div>`;
+}
+function render(){
+  if(!state) return;
+  const me=myIdx(), mine=state.players[me], cur=state.players[state.turn];
+  const tb=$('turnbar');
+  tb.className='turnbar'+(myTurn()?' me':'');
+  tb.textContent=state.over?'게임 종료':(myTurn()?'내 차례!':`${cur.name} 차례${cur.bot?' 🤖':''}`);
+  $('roundTxt').textContent=`${state.round}R`;
+  $('opps').innerHTML=state.players.map((p,i)=>i===me?'':`<div class="opp ${i===state.turn?'cur':''}"><div class="nm">${p.bot?'🤖':''}${p.name} <span class="pt">${p.pts}</span></div>
+    <div class="mini">${COLS.map(c=>p.bonus[c]?bn(c,p.bonus[c]):'').join('')}</div>
+    <div class="mini">${['w','u','g','r','k','y'].map(c=>p.gems[c]?gem(c,p.gems[c]):'').join('')}</div>
+    <div class="small">예약 ${p.reserved.length} · 귀족 ${p.nobles.length}</div></div>`).join('');
+  $('nobles').innerHTML=state.nobles.map(id=>`<div class="noble"><div class="pt">3</div><div class="req">${Object.entries(NOBLES[id].req).map(([c,n])=>bn(c,n)).join('')}</div></div>`).join('')||'<span class="small">없음</span>';
+  $('market').innerHTML=[3,2,1].map(l=>`<div class="mrow"><div class="deck l${l} ${state.decks[l].length?'':'empty'}" data-lv="${l}"><div>Lv${l}</div><div class="small">${state.decks[l].length}장</div></div>${state.market[l].map((id,idx)=>cardHTML(id,`data-lv="${l}" data-idx="${idx}"`,mine&&id!=null&&costCheck(mine,CARDS[id]).ok?'ok':'')).join('')}</div>`).join('');
+  $('bank').innerHTML=['w','u','g','r','k','y'].map(c=>`<div class="tok ${sel[c]?'sel':''} ${state.bank[c]?'':'dis'}" data-c="${c}">${gem(c,state.bank[c])}${sel[c]?`<span class="badge">+${sel[c]}</span>`:''}</div>`).join('');
+  if(mine){
+    $('mine').innerHTML=`<div class="hd"><div><b>${mine.name}</b> <span class="small">카드 ${mine.cards.length}장 · 보석 ${total(mine.gems)}/10</span></div><div class="pt">${mine.pts}점</div></div>
+      <div class="mygems">${['w','u','g','r','k','y'].map(c=>`<div class="mg">${gem(c,mine.gems[c])}${c!=='y'&&mine.bonus[c]?bn(c,mine.bonus[c]):''}</div>`).join('')}</div>
+      <div class="small" style="margin-top:8px">동그라미=보석, 작은 네모=카드 보너스(할인)</div>
+      ${mine.nobles.length?`<div class="lbl">내 귀족</div><div class="nobles">${mine.nobles.map(id=>`<div class="noble"><div class="pt">3</div></div>`).join('')}</div>`:''}
+      <div class="lbl">예약 카드 (${mine.reserved.length}/3)</div><div class="res">${mine.reserved.map(id=>cardHTML(id,`data-res="${id}"`,costCheck(mine,CARDS[id]).ok?'ok':'')).join('')||'<span class="small">없음</span>'}</div>`;
+  }
+  $('log').innerHTML=state.log.slice(0,3).join('<br>');
+  $('actbar').style.display=Object.keys(sel).length?'flex':'none';
+  if(state.over) showEnd();
+}
+function showEnd(){
+  if($('endMask').classList.contains('on')) return;
+  const ranked=[...state.players].sort((a,b)=>b.pts-a.pts||a.cards.length-b.cards.length);
+  $('endTitle').textContent=state.winners.includes(state.players[myIdx()]?.id)?'🏆 승리!':'게임 종료';
+  $('endList').innerHTML=ranked.map(p=>`<div class="rank ${state.winners.includes(p.id)?'win':''}"><span>${state.winners.includes(p.id)?'🏆 ':''}${p.name}</span><span>${p.pts}점 · ${p.cards.length}장</span></div>`).join('');
+  $('againBtn').style.display=(mode==='local'||isHost)?'':'none';
+  $('endMask').classList.add('on');
+}
+
+/* ================= 입력 ================= */
+$('game').addEventListener('click',e=>{
+  const t=e.target.closest('.tok,.card,.deck'); if(!t) return;
+  if(!myTurn()) return toast('내 차례가 아니에요');
+  if(t.classList.contains('tok')) return ui.toggleGem(t.dataset.c);
+  if(t.classList.contains('deck')) return ui.openCard({lv:+t.dataset.lv,idx:-1});
+  if(t.dataset.res!=null) return ui.openCard({from:'res',id:+t.dataset.res});
+  if(t.dataset.lv!=null) return ui.openCard({lv:+t.dataset.lv,idx:+t.dataset.idx});
+});
+
+async function submit(a){
+  if(mode==='local'){
+    const r=applyAction(state,0,a); if(r.err) return toast(r.err);
+    state=r.s; sel={}; render(); scheduleBot();
+  } else {
+    try{
+      await runTransaction(db,async tx=>{
+        const ref=doc(db,'gem_rooms',roomCode); const snap=await tx.get(ref); const g=snap.data().game;
+        if(g.v!==state.v) throw new Error('화면이 갱신됐어요. 다시 해주세요');
+        const pi=g.players.findIndex(p=>p.id===pid); if(g.turn!==pi) throw new Error('내 차례가 아니에요');
+        const r=applyAction(g,pi,a); if(r.err) throw new Error(r.err);
+        tx.update(ref,{game:r.s,updatedAt:Date.now()});
+      });
+      sel={};
+    }catch(e){ toast(e.message||String(e)); }
+  }
+}
+function scheduleBot(){
+  if(mode!=='local'||state.over) return;
+  const pi=state.turn; if(!state.players[pi].bot) return;
+  setTimeout(()=>{
+    const a=botAction(state,pi); if(!a){ state.turn=(state.turn+1)%state.players.length; render(); scheduleBot(); return; }
+    const r=applyAction(state,pi,a); if(r.err){ console.warn('bot',r.err); const s=clone(state); s.turn=(s.turn+1)%s.players.length; state=s; }
+    else state=r.s;
+    render(); scheduleBot();
+  },900);
+}
+// 가져오기 전 10개 초과 확인
+function needDiscard(a,extraGold){
+  const me=state.players[myIdx()], g={...me.gems};
+  if(a.gems) for(const [c,n] of Object.entries(a.gems)) g[c]+=n; if(extraGold) g.y++;
+  const over=total(g)-10; if(over<=0) return false;
+  pending={a,g,d:{},over}; renderDiscard(); $('discMask').classList.add('on'); return true;
+}
+function renderDiscard(){
+  const {g,d,over}=pending, left=over-total(d);
+  $('discNeed').textContent=left; $('discOk').disabled=left!==0;
+  $('discGems').innerHTML=['w','u','g','r','k','y'].map(c=>`<div class="mg" data-c="${c}">${gem(c,g[c]-(d[c]||0))}${d[c]?`<span class="bn g-y" style="position:absolute;top:-6px;right:-6px">-${d[c]}</span>`:''}</div>`).join('');
+}
+$('discGems').addEventListener('click',e=>{
+  const t=e.target.closest('.mg'); if(!t||!pending) return; const c=t.dataset.c;
+  const {g,d,over}=pending;
+  if(total(d)<over&&g[c]-(d[c]||0)>0) d[c]=(d[c]||0)+1; else if(d[c]) d[c]--; 
+  if(d[c]===0) delete d[c]; renderDiscard();
+});
+
+/* ================= 온라인 ================= */
+function genCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=A[Math.floor(Math.random()*A.length)];return s;}
+function listen(code){
+  if(unsub) unsub();
+  unsub=onSnapshot(doc(db,'gem_rooms',code),snap=>{
+    if(!snap.exists()){ toast('방이 사라졌어요'); return ui.leave(); }
+    roomData=snap.data(); isHost=roomData.hostId===pid;
+    if(roomData.status==='lobby'){ state=null; $('endMask').classList.remove('on'); renderLobby(); ui.show('lobby'); }
+    else { state=roomData.game; if(!$('game').classList.contains('on')){ ui.show('game'); } if(!state.players.find(p=>p.id===pid)){ toast('관전 모드'); } render(); }
+  },err=>{ console.error(err); toast('연결 오류: '+err.code); });
+}
+function renderLobby(){
+  $('lobbyCode').textContent=roomCode;
+  $('lobbyCnt').textContent=`${roomData.players.length}/4`;
+  $('lobbyList').innerHTML=roomData.players.map(p=>`<div class="pl"><span>${p.name}${p.id===roomData.hostId?' 👑':''}${p.id===pid?' (나)':''}</span></div>`).join('');
+  $('startBtn').style.display=isHost?'':'none'; $('startBtn').disabled=roomData.players.length<2;
+  $('waitMsg').style.display=isHost?'none':'';
+}
+
+/* ================= UI 핸들러 ================= */
+const ui={
+  show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0);$('actbar').style.display='none';},
+  soloSetup(){ if(!myName()) return toast('이름을 입력하세요'); ui.show('solo'); },
+  startSolo(nb){
+    mode='local'; const ps=[{id:pid,name:myName()}]; for(let i=0;i<nb;i++) ps.push({id:'bot'+i,name:['알파','베타','감마'][i],bot:true});
+    state=newGame(ps); sel={}; $('endMask').classList.remove('on'); ui.show('game'); render(); scheduleBot();
+  },
+  async createRoom(){
+    if(!myName()) return toast('이름을 입력하세요'); if(!db) return toast('서버 연결 실패');
+    mode='online'; roomCode=genCode();
+    try{ await setDoc(doc(db,'gem_rooms',roomCode),{code:roomCode,hostId:pid,status:'lobby',players:[{id:pid,name:myName()}],game:null,createdAt:Date.now(),updatedAt:Date.now()}); listen(roomCode); }
+    catch(e){ toast('방 생성 실패: '+e.code); }
+  },
+  async joinRoom(code){
+    code=(code||$('codeIn').value).trim().toUpperCase(); if(code.length!==4) return toast('코드 4자리');
+    if(!myName()) return toast('이름을 입력하세요'); if(!db) return toast('서버 연결 실패');
+    mode='online'; roomCode=code;
+    try{
+      await runTransaction(db,async tx=>{
+        const ref=doc(db,'gem_rooms',code); const snap=await tx.get(ref);
+        if(!snap.exists()) throw new Error('없는 방이에요');
+        const d=snap.data();
+        if(d.players.find(p=>p.id===pid)){ if(d.players.find(p=>p.id===pid).name!==myName()&&d.status==='lobby'){ d.players.find(p=>p.id===pid).name=myName(); tx.update(ref,{players:d.players}); } return; }
+        if(d.status!=='lobby') throw new Error('이미 시작된 방이에요');
+        if(d.players.length>=4) throw new Error('방이 꽉 찼어요');
+        tx.update(ref,{players:[...d.players,{id:pid,name:myName()}]});
+      });
+      listen(code);
+    }catch(e){ toast(e.message||String(e)); mode=null; }
+  },
+  async startOnline(){
+    if(!isHost||roomData.players.length<2) return;
+    const g=newGame(shuf([...roomData.players]));
+    try{ await updateDoc(doc(db,'gem_rooms',roomCode),{status:'playing',game:g,updatedAt:Date.now()}); }catch(e){ toast('시작 실패: '+e.code); }
+  },
+  async again(){
+    $('endMask').classList.remove('on');
+    if(mode==='local'){ ui.startSolo(state.players.length-1); return; }
+    if(isHost) await updateDoc(doc(db,'gem_rooms',roomCode),{status:'lobby',game:null,updatedAt:Date.now()});
+  },
+  leave(){ if(unsub){unsub();unsub=null;} mode=null; state=null; sel={}; roomCode=null; $('endMask').classList.remove('on'); history.replaceState(null,'',location.pathname); ui.show('home'); },
+  copyCode(){ navigator.clipboard?.writeText(roomCode).then(()=>toast('복사됨')); },
+  shareLink(){ const url=`${location.origin}${location.pathname}?room=${roomCode}`; if(navigator.share) navigator.share({title:'보석 길드',text:`방 코드 ${roomCode}`,url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>toast('링크 복사됨')); },
+  toggleGem(c){
+    if(c==='y') return toast('금은 예약할 때 받아요');
+    if(!state.bank[c]) return;
+    const two=Object.entries(sel).find(([k,n])=>n===2);
+    if(sel[c]===1&&Object.keys(sel).length===1){ if(state.bank[c]>=4) sel[c]=2; else delete sel[c]; }
+    else if(sel[c]) delete sel[c];
+    else { if(two) sel={}; if(Object.keys(sel).length>=3) return toast('최대 3개'); sel[c]=1; }
+    render();
+  },
+  clearSel(){ sel={}; render(); },
+  confirmTake(){ const a={type:'take',gems:{...sel}}; if(needDiscard(a)) return; submit(a); },
+  openCard(o){
+    modalCard=o; const me=state.players[myIdx()];
+    const id=o.from==='res'?o.id:(o.idx<0?null:state.market[o.lv][o.idx]);
+    $('cmTitle').textContent=o.idx<0?`Lv${o.lv} 덱에서 예약`:(o.from==='res'?'예약 카드':`Lv${o.lv} 카드`);
+    $('cmCard').innerHTML=id==null?`<div class="deck l${o.lv}" style="margin:0 auto 12px;width:90px;height:110px">Lv${o.lv}<br>?</div>`:cardHTML(id);
+    let info='';
+    if(id!=null){ const cc=costCheck(me,CARDS[id]); info=cc.ok?(cc.gold?`구매 가능 (금 ${cc.gold}개 사용)`:'구매 가능'):`보석 ${cc.gold}개 부족`; $('cmBuy').disabled=!cc.ok; }
+    else { $('cmBuy').disabled=true; info='덱 맨 위 카드를 보지 않고 예약'; }
+    $('cmRes').disabled=o.from==='res'||me.reserved.length>=3||(id==null&&!state.decks[o.lv].length);
+    $('cmInfo').textContent=info+(o.from!=='res'&&state.bank.y?' · 예약 시 금 +1':'');
+    $('cardMask').classList.add('on');
+  },
+  closeModal(){ $('cardMask').classList.remove('on'); },
+  doBuy(){ const o=modalCard; ui.closeModal(); submit(o.from==='res'?{type:'buy',from:'res',id:o.id}:{type:'buy',from:'mk',lv:o.lv,idx:o.idx}); },
+  doReserve(){ const o=modalCard; ui.closeModal(); const a={type:'reserve',lv:o.lv,idx:o.idx}; if(needDiscard(a,state.bank.y>0)) return; submit(a); },
+  cancelDiscard(){ pending=null; $('discMask').classList.remove('on'); },
+  okDiscard(){ const {a,d}=pending; a.discard=d; pending=null; $('discMask').classList.remove('on'); submit(a); },
+};
+window.ui=ui;
+
+// 링크로 입장
+const rp=new URLSearchParams(location.search).get('room');
+if(rp){ $('codeIn').value=rp.toUpperCase(); if(localStorage.gg_name) ui.joinRoom(rp); else toast('이름 입력 후 참가를 누르세요'); }
+</script>
+</body>
+</html>
