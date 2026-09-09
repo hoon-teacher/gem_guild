@@ -469,7 +469,7 @@ function withDiscard(a,pl,needMap,gold){
 
 
 /* ================= 치트 AI (초코파이 전용) — 전탐색 + 평가함수 + 3수 읽기 ================= */
-const AP={W:170,WF:500,BON:9,DEM:1.6,GOLD:7,GEM:3.2,NOB:140,CP:11,CB:7,DIST:1.6,TOPN:3,RESM:1.6,OPP:0.75};
+const AP={W:170,WF:500,BON:22,DEM:1.6,GOLD:3,GEM:3.6,NOB:400,CP:11,CB:9,DIST:1.6,TOPN:3,RESM:1.0,OPP:0.75};
 function shortfall(pl,card){let t=0;for(const c of COLS)t+=Math.max(0,(card.cost[c]||0)-pl.bonus[c]-pl.gems[c]);return Math.max(0,t-pl.gems.y);}
 function mkIds(s){const a=[];[1,2,3].forEach(l=>s.market[l].forEach(id=>{if(id!=null)a.push(id);}));return a;}
 function evalP(s,pi){
@@ -541,6 +541,7 @@ function search(s,pi,d){
   }
   return best;
 }
+function hideDecks(s){ [1,2,3].forEach(l=>shuf(s.decks[l])); return s; }
 function smartAction(s,pi,deep){
   const scored=[];
   for(const a of genActions(s,pi)){const r=applyAction(s,pi,a);if(r.err)continue;scored.push({a,s:r.s,v:evalState(r.s,pi)});}
@@ -611,7 +612,7 @@ function calcHint(){
   hint=null;
   if(hintCalc===state.v) return;         // 계산 중
   hintCalc=state.v;
-  const key=state.v, snap=clone(state);
+  const key=state.v, snap=hideDecks(clone(state));
   setTimeout(()=>{
     let a=null;
     try{ a=search(snap,me,3).a; }catch(e){ console.warn(e); }
