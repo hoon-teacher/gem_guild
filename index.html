@@ -118,6 +118,67 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .rank{display:flex;justify-content:space-between;padding:8px 10px;background:#1e1b4b;border-radius:8px;margin-bottom:6px}
 .rank.win{background:#f59e0b;color:#1f2937;font-weight:800}
+
+/* ===== 획득 이펙트 ===== */
+.colL,.colR{display:contents}
+.fly{position:fixed;z-index:88;pointer-events:none}
+.card-fly{left:50%;top:40%;width:98px;height:116px;opacity:0;
+  transform:translate(-50%,-50%) scale(.5);
+  transition:transform .46s cubic-bezier(.2,1.15,.4,1),opacity .28s}
+.card-fly .card{width:100%;height:100%;flex:none}
+.card-fly.pop{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
+.card-fly.go{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3)}
+.card-fly .tagline{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;
+  font-size:13px;font-weight:800;color:#fcd34d;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+.gem-fly{opacity:1;transition:transform .48s cubic-bezier(.3,.9,.35,1),opacity .48s}
+.gem-fly.go{opacity:.1;transform:translate(var(--dx),var(--dy)) scale(.55)}
+.gem-fly .gem{width:38px;height:38px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800}
+@keyframes gotflash{0%{box-shadow:0 0 0 0 rgba(252,211,77,.65)}100%{box-shadow:0 0 0 14px rgba(252,211,77,0)}}
+.mine.got,.opp.got{animation:gotflash .7s ease-out}
+@keyframes slotin{0%{opacity:0;transform:translateY(-10px) scale(.9)}100%{opacity:1;transform:none}}
+.card.fresh{animation:slotin .38s ease-out}
+@keyframes nobleban{0%{opacity:0;transform:translateY(-14px) scale(.9)}18%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+.nobleban{position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:95;pointer-events:none;
+  background:linear-gradient(150deg,#7c3aed,#4c1d95);border:1px solid #c4b5fd;border-radius:14px;
+  padding:12px 22px;font-weight:800;font-size:17px;color:#fde68a;box-shadow:0 10px 30px rgba(0,0,0,.6);animation:nobleban 1.9s ease-out forwards}
+
+/* ===== 데스크톱 ===== */
+@media (min-width:900px){
+  body{font-size:15px}
+  .screen{max-width:1120px;padding:20px}
+  #game{display:grid;grid-template-columns:1fr 400px;gap:20px;align-items:start;padding:12px 20px 110px}
+  .top,.opps{grid-column:1 / -1}
+  .colL,.colR{display:block}
+  .opps{gap:10px}
+  .opp{min-width:150px;padding:9px 12px}
+  .lbl{font-size:13px;margin:12px 0 6px}
+  .card{height:122px;border-radius:11px}
+  .card .art{width:70px;height:70px}
+  .card .pts{font-size:26px}
+  .card .band{height:14px}
+  .card .band i{width:4px;height:4px}
+  .card .ct{top:18px;left:8px;right:8px}
+  .card .ct .gem{width:23px;height:23px;font-size:13px}
+  .card .cost{left:7px;bottom:7px;right:7px;gap:3px}
+  .card .cost .gem{width:22px;height:22px;font-size:13px}
+  .deck{flex:0 0 76px;height:122px}
+  .deck .lvn{font-size:20px}
+  .mrow{gap:8px;margin:8px 0}
+  .noble{width:92px;padding:8px}
+  .noble .bn{width:22px;height:22px;font-size:13px}
+  .tok .gem{width:60px;height:60px;font-size:22px}
+  .bank{padding:14px;gap:8px}
+  .mg .gem{width:46px;height:46px;font-size:17px}
+  .mg .bn{width:26px;height:26px;font-size:14px;bottom:-8px;right:-8px}
+  .mygems{gap:10px}
+  .mine{padding:14px}
+  .res .card{flex:0 0 96px}
+  .log{max-height:none;font-size:13px}
+  .actbar{max-width:1120px;padding:12px 20px}
+  .mask{align-items:center}
+  .modal{border-radius:18px;max-width:440px;padding:22px}
+  .card-fly{width:150px;height:180px}
+}
 </style>
 </head>
 <body>
@@ -265,12 +326,15 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
     <div class="small" id="roundTxt"></div>
   </div>
   <div class="opps" id="opps"></div>
-  <div class="lbl">귀족</div>
-  <div class="nobles" id="nobles"></div>
-  <div class="lbl">카드 시장 (카드를 누르면 구매·예약)</div>
-  <div id="market"></div>
-  <div class="lbl">은행 (보석을 눌러 고르기)</div>
-  <div class="bank" id="bank"></div>
+  <div class="colL">
+    <div class="lbl">귀족</div>
+    <div class="nobles" id="nobles"></div>
+    <div class="lbl">카드 시장 (카드를 누르면 구매·예약)</div>
+    <div id="market"></div>
+    <div class="lbl">은행 (보석을 눌러 고르기)</div>
+    <div class="bank" id="bank"></div>
+  </div>
+  <div class="colR">
   <div class="mine" id="mine"></div>
   <div class="hintbox" id="hintbox">
     <div class="ht">🍫 초코파이 치트 · 추천 행동</div>
@@ -278,6 +342,7 @@ h1{font-size:28px;text-align:center;margin:30px 0 6px}
     <button id="hintGo" onclick="ui.doHint()">이대로 하기</button>
   </div>
   <div class="log" id="log"></div>
+  </div>
 </div>
 
 <div class="actbar" id="actbar" style="display:none">
@@ -579,6 +644,79 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clear
 function myName(){const n=$('nameIn').value.trim();if(n)localStorage.gg_name=n;return n;}
 $('nameIn').value=localStorage.gg_name||'';
 
+
+/* ================= 획득 이펙트 ================= */
+let prevSnap=null;
+function snapOf(s){ return s?{n:s.players.length,market:{1:[...s.market[1]],2:[...s.market[2]],3:[...s.market[3]]},players:s.players.map(p=>({id:p.id,gems:{...p.gems},cards:[...p.cards],reserved:[...p.reserved],nobles:p.nobles.length}))}:null; }
+function destFor(pi){
+  const me=myIdx();
+  if(pi===me) return $('mine');
+  const others=state.players.map((p,i)=>i).filter(i=>i!==me);
+  const els=document.querySelectorAll('#opps .opp');
+  const k=others.indexOf(pi);
+  return (k>=0&&els[k])?els[k]:$('opps');
+}
+function flash(el){ if(!el)return; el.classList.remove('got'); void el.offsetWidth; el.classList.add('got'); setTimeout(()=>el.classList.remove('got'),800); }
+function flyCard(id,destEl,label){
+  const el=document.createElement('div');
+  el.className='fly card-fly';
+  el.innerHTML=(label?`<div class="tagline">${label}</div>`:'')+cardHTML(id);
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>{
+    el.classList.add('pop');
+    const r=el.getBoundingClientRect(), d=destEl.getBoundingClientRect();
+    el.style.setProperty('--dx',(d.left+d.width/2-(r.left+r.width/2))+'px');
+    el.style.setProperty('--dy',(d.top+d.height/2-(r.top+r.height/2))+'px');
+    setTimeout(()=>{el.classList.remove('pop');el.classList.add('go');},430);
+  });
+  setTimeout(()=>el.remove(),1050);
+}
+function flyGem(c,n,destEl){
+  const src=document.querySelector(`.tok[data-c="${c}"] .gem`); if(!src||!destEl) return;
+  const r=src.getBoundingClientRect();
+  const el=document.createElement('div');
+  el.className='fly gem-fly';
+  el.style.left=r.left+'px'; el.style.top=r.top+'px';
+  el.innerHTML=`<span class="gem g-${c}">${n>1?'+'+n:''}</span>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>{
+    const e=el.getBoundingClientRect(), d=destEl.getBoundingClientRect();
+    el.style.setProperty('--dx',(d.left+d.width/2-(e.left+e.width/2))+'px');
+    el.style.setProperty('--dy',(d.top+d.height/2-(e.top+e.height/2))+'px');
+    el.classList.add('go');
+  });
+  setTimeout(()=>el.remove(),560);
+}
+function playFX(before,s){
+  if(!before||before.n!==s.players.length) return;
+  s.players.forEach((p,pi)=>{
+    const b=before.players[pi]; if(!b||b.id!==p.id) return;
+    const dest=destFor(pi);
+    const newCards=p.cards.filter(id=>!b.cards.includes(id));
+    const newRes=p.reserved.filter(id=>!b.reserved.includes(id));
+    if(newCards.length>2||newRes.length>2) return;
+    newCards.forEach(id=>flyCard(id,dest,'카드 획득'));
+    newRes.forEach(id=>flyCard(id,dest,'예약'));
+    let got=false;
+    ['w','u','g','r','k','y'].forEach(c=>{
+      const d=p.gems[c]-b.gems[c];
+      if(d>0&&d<=3){ flyGem(c,d,dest); got=true; }
+    });
+    if(newCards.length||newRes.length||got) flash(dest);
+    if(p.nobles>b.nobles){
+      const el=document.createElement('div'); el.className='nobleban'; el.textContent='👑 귀족 방문 +3';
+      document.body.appendChild(el); setTimeout(()=>el.remove(),2000);
+    }
+  });
+  // 시장에 새로 깔린 카드 반짝
+  document.querySelectorAll('#market .card').forEach(el=>{
+    const lv=el.dataset.lv, idx=el.dataset.idx;
+    if(lv==null||idx==null) return;
+    const now=s.market[+lv][+idx];
+    if(now!=null&&!before.market?.[lv]?.includes(now)) el.classList.add('fresh');
+  });
+}
+
 /* ================= 렌더 ================= */
 const gem=(c,n,cls='')=>`<span class="gem g-${c} ${cls}">${n??''}</span>`;
 const bn=(c,n)=>`<span class="bn g-${c}">${n}</span>`;
@@ -636,7 +774,7 @@ function render(){
   $('bank').innerHTML=['w','u','g','r','k','y'].map(c=>`<div class="tok ${sel[c]?'sel':''} ${state.bank[c]?'':'dis'}" data-c="${c}">${gem(c,state.bank[c])}${sel[c]?`<span class="badge">+${sel[c]}</span>`:''}</div>`).join('');
   if(mine){
     $('mine').innerHTML=`<div class="hd"><div><b>${mine.name}</b> <span class="small">카드 ${mine.cards.length}장 · 보석 ${total(mine.gems)}/10</span></div><div class="pt">${mine.pts}점</div></div>
-      <div class="mygems">${['w','u','g','r','k','y'].map(c=>`<div class="mg">${gem(c,mine.gems[c])}${c!=='y'&&mine.bonus[c]?bn(c,mine.bonus[c]):''}</div>`).join('')}</div>
+      <div class="mygems">${['w','u','g','r','k','y'].map(c=>`<div class="mg" data-c="${c}">${gem(c,mine.gems[c])}${c!=='y'&&mine.bonus[c]?bn(c,mine.bonus[c]):''}</div>`).join('')}</div>
       <div class="small" style="margin-top:8px">동그라미=보석, 작은 네모=카드 보너스(할인)</div>
       ${mine.nobles.length?`<div class="lbl">내 귀족</div><div class="nobles">${mine.nobles.map(id=>`<div class="noble"><div class="pt">3</div></div>`).join('')}</div>`:''}
       <div class="lbl">예약 카드 (${mine.reserved.length}/3)</div><div class="res">${mine.reserved.map(id=>cardHTML(id,`data-res="${id}"`,(costCheck(mine,CARDS[id]).ok?'ok ':'')+(hint&&hint.from==='res'&&hint.id===id?'hintc':''))).join('')||'<span class="small">없음</span>'}</div>`;
@@ -647,6 +785,8 @@ function render(){
   $('hintGo').style.display=hint?'':'none';
   $('log').innerHTML=state.log.slice(0,3).join('<br>');
   $('actbar').style.display=Object.keys(sel).length?'flex':'none';
+  const beforeSnap=prevSnap; prevSnap=snapOf(state);
+  if(beforeSnap) { try{ playFX(beforeSnap,state); }catch(e){ console.warn('fx',e); } }
   if(state.over) showEnd();
 }
 function showEnd(){
@@ -739,7 +879,7 @@ const ui={
   soloSetup(){ if(!myName()) return toast('이름을 입력하세요'); ui.show('solo'); },
   startSolo(nb){
     mode='local'; const ps=[{id:pid,name:myName()}]; for(let i=0;i<nb;i++) ps.push({id:'bot'+i,name:['알파','베타','감마'][i],bot:true});
-    state=newGame(ps); sel={}; $('endMask').classList.remove('on'); ui.show('game'); render(); scheduleBot();
+    state=newGame(ps); sel={}; prevSnap=null; $('endMask').classList.remove('on'); ui.show('game'); render(); scheduleBot();
   },
   async createRoom(){
     if(!myName()) return toast('이름을 입력하세요'); if(!db) return toast('서버 연결 실패');
@@ -774,7 +914,7 @@ const ui={
     if(mode==='local'){ ui.startSolo(state.players.length-1); return; }
     if(isHost) await updateDoc(doc(db,'gem_rooms',roomCode),{status:'lobby',game:null,updatedAt:Date.now()});
   },
-  leave(){ if(unsub){unsub();unsub=null;} mode=null; state=null; sel={}; roomCode=null; $('endMask').classList.remove('on'); history.replaceState(null,'',location.pathname); ui.show('home'); },
+  leave(){ if(unsub){unsub();unsub=null;} mode=null; state=null; prevSnap=null; sel={}; roomCode=null; $('endMask').classList.remove('on'); history.replaceState(null,'',location.pathname); ui.show('home'); },
   copyCode(){ navigator.clipboard?.writeText(roomCode).then(()=>toast('복사됨')); },
   shareLink(){ const url=`${location.origin}${location.pathname}?room=${roomCode}`; if(navigator.share) navigator.share({title:'보석 길드',text:`방 코드 ${roomCode}`,url}).catch(()=>{}); else navigator.clipboard?.writeText(url).then(()=>toast('링크 복사됨')); },
   toggleGem(c){
